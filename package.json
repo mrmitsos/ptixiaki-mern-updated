@@ -1,0 +1,31 @@
+{
+  "name": "v2",
+  "version": "1.0.0",
+  "description": "ptixiaki ecommerce",
+  "homepage": "https://github.com/mrmitsos/ptixiaki-mern-v2#readme",
+  "bugs": {
+    "url": "https://github.com/mrmitsos/ptixiaki-mern-v2/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrmitsos/ptixiaki-mern-v2.git"
+  },
+  "license": "ISC",
+  "author": "dimitris",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "server": "nodemon backend/server.js",
+    "client": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "dotenv": "^17.0.1",
+    "nodemon": "^3.1.10"
+  }
+}
