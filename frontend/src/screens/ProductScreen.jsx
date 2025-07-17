@@ -25,19 +25,28 @@ const ProductScreen = () => {
   // bazw to id tou proiontos sto url me to Param pou einai apo to router
   const { id: productId } = useParams();
 
+  // getting the Redux dispatch function to dispatch actions
   const dispatch = useDispatch();
+
+  // getting the navigate function from React Router to programmatically change routes
   const navigate = useNavigate();
 
+  // local state to track the selected quantity of the product
   const [qty, setQty] = useState(1);
 
+  // using RTK Query to fetch product details by ID
   const {
-    data: product,
-    isLoading,
-    error,
+    data: product, // renaming the returned data to 'product' for clarity
+    isLoading, // indicates if the request is in progress
+    error, // contains any error returned from the request
   } = useGetProductDetailsQuery(productId);
 
+  // function to handle adding the product to the cart
   const addToCartHandler = () => {
+    // dispatching the addToCart action with the selected product and quantity
     dispatch(addToCart({ ...product, qty }));
+
+    // navigating to the cart page after adding the item
     navigate("/cart");
   };
 
