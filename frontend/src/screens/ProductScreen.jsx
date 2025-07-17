@@ -1,19 +1,45 @@
-import React from "react";
-import { useParams } from "react-router-dom";
+import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 //import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Row, Col, Image, ListGroup, Card, Button } from "react-bootstrap";
+import {
+  Form,
+  Row,
+  Col,
+  Image,
+  ListGroup,
+  Card,
+  Button,
+} from "react-bootstrap";
 import Rating from "../components/Rating";
 //import axios from "axios";
 import { useGetProductDetailsQuery } from "../slices/productsApiSlice";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
+import { addToCart } from "../slices/cartSlice";
+import { useDispatch } from "react-redux";
 
 const ProductScreen = () => {
   //const [product, setProduct] = useState({});
 
   // bazw to id tou proiontos sto url me to Param pou einai apo to router
   const { id: productId } = useParams();
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [qty, setQty] = useState(1);
+
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useGetProductDetailsQuery(productId);
+
+  const addToCartHandler = () => {
+    dispatch(addToCart({ ...product, qty }));
+    navigate("/cart");
+  };
 
   /*// useEffect runs the code inside when the component mounts or when productId changes
   useEffect(() => {
@@ -35,11 +61,7 @@ const ProductScreen = () => {
   console.log(product);
   */
 
-  const {
-    data: product,
-    isLoading,
-    error,
-  } = useGetProductDetailsQuery(productId);
+  //console.log([...Array(product.countInStock).keys()]);
 
   return (
     <>
@@ -50,7 +72,9 @@ const ProductScreen = () => {
       {isLoading ? (
         <Loader />
       ) : error ? (
-        <Message variant="danger">{error?.data?.message || error.error}</Message>
+        <Message variant="danger">
+          {error?.data?.message || error.error}
+        </Message>
       ) : (
         <Row className="gy-4">
           {/* Product Image */}
@@ -120,12 +144,34 @@ const ProductScreen = () => {
                   </Row>
                 </ListGroup.Item>
 
+                {product.countInStock > 0 && (
+                  <ListGroup.Item>
+                    <Row>
+                      <Col>QTY</Col>
+                      <Col>
+                        <Form.Control
+                          as="select"
+                          value={qty}
+                          onChange={(e) => setQty(Number(e.target.value))}
+                        >
+                          {[...Array(product.countInStock).keys()].map((x) => (
+                            <option key={x + 1} value={x + 1}>
+                              {x + 1}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Col>
+                    </Row>
+                  </ListGroup.Item>
+                )}
+
                 <ListGroup.Item>
                   <Button
                     className="w-100"
                     type="button"
                     variant="primary"
                     disabled={product.countInStock === 0}
+                    onClick={addToCartHandler}
                   >
                     Add to Cart
                   </Button>
