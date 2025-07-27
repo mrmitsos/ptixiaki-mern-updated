@@ -4,7 +4,7 @@ import { updateCart } from "../utils/cartUtils";
 // Αρχικό state του cart. Αν υπάρχει στο localStorage, το διαβάζουμε, αλλιώς ξεκινάμε με άδειο καλάθι.
 const initialState = localStorage.getItem("cart")
   ? JSON.parse(localStorage.getItem("cart"))
-  : { cartItems: [] };
+  : { cartItems: [], shippingAddress: {}, paymentMethod: "PayPal" };
 
 // Δημιουργία slice για το καλάθι (cart)
 const cartSlice = createSlice({
@@ -40,9 +40,29 @@ const cartSlice = createSlice({
       // Ενημέρωση του state ή του localStorage
       return updateCart(state);
     },
+
+    saveShippingAddress: (state, action) => {
+      state.shippingAddress = action.payload;
+      return updateCart(state);
+    },
+
+    savePaymentMethod: (state, action) => {
+      state.paymentMethod = action.payload;
+      return updateCart(state);
+    },
+    clearCartItems: (state, action) => {
+      state.cartItems = [];
+      return updateCart(state);
+    },
   },
 });
 
-export const { addToCart, removeFromCart } = cartSlice.actions;
+export const {
+  addToCart,
+  removeFromCart,
+  saveShippingAddress,
+  savePaymentMethod,
+  clearCartItems,
+} = cartSlice.actions;
 
 export default cartSlice.reducer;
