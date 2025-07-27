@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { updateCart } from "./utils/cartUtils";
+import { updateCart } from "../utils/cartUtils";
 
 // Αρχικό state του cart. Αν υπάρχει στο localStorage, το διαβάζουμε, αλλιώς ξεκινάμε με άδειο καλάθι.
 const initialState = localStorage.getItem("cart")
