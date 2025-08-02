@@ -1,13 +1,6 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import {
-  Row,
-  Col,
-  ListGroup,
-  Image,
-  Button,
-  Card,
-} from "react-bootstrap";
+import { Row, Col, ListGroup, Image, Button, Card } from "react-bootstrap";
 import Message from "../components/Message";
 import Loader from "../components/Loader";
 import {
@@ -22,7 +15,10 @@ import { useEffect } from "react";
 import { useSelector } from "react-redux";
 
 const OrderScreen = () => {
+  // Παίρνουμε το orderId από τα URL params
   const { id: orderId } = useParams();
+
+  // Καλούμε το API για να πάρουμε τα στοιχεία της παραγγελίας
   const {
     data: order,
     refetch,
@@ -30,21 +26,27 @@ const OrderScreen = () => {
     error,
   } = useGetOrderDetailsQuery(orderId);
 
+  // Mutation για πληρωμή παραγγελίας
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
 
+  // Mutation για σήμανση παραγγελίας ως παραδοθείσας
   const [deliverOrder, { isLoading: loadingDeliver }] =
     useDeliverOrderMutation();
 
+  // PayPal script state
   const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
 
+  // Καλούμε το API για να πάρουμε το PayPal client ID
   const {
     data: paypal,
     isLoading: loadingPayPal,
     error: errorPaypal,
   } = useGetPaypalClientIdQuery();
 
+  // Παίρνουμε τα στοιχεία χρήστη από το store
   const { userInfo } = useSelector((state) => state.auth);
 
+  // useEffect για φόρτωση του PayPal script μόλις έχουμε client ID
   useEffect(() => {
     if (!errorPaypal && !loadingPayPal && paypal.clientId) {
       const loadPayPalScript = async () => {
@@ -65,28 +67,32 @@ const OrderScreen = () => {
     }
   }, [order, paypal, paypalDispatch, loadingPayPal, errorPaypal]);
 
+  // Συνάρτηση που καλείται όταν η πληρωμή εγκριθεί επιτυχώς
   function onApprove(data, actions) {
     return actions.order.capture().then(async function (details) {
       try {
         await payOrder({ orderId, details });
-        refetch();
-        toast.success("Payment Successful");
+        refetch(); // Ενημέρωση δεδομένων παραγγελίας
+        toast.success("Η πληρωμή ολοκληρώθηκε με επιτυχία");
       } catch (error) {
         toast.error(error?.data?.message || error.message);
       }
     });
   }
 
+  // Συνάρτηση δοκιμαστικής πληρωμής (χωρίς πραγματική συναλλαγή)
   async function onApproveTest() {
     await payOrder({ orderId, details: { payer: {} } });
     refetch();
-    toast.success("Payment Successful");
+    toast.success("Η πληρωμή ολοκληρώθηκε με επιτυχία");
   }
 
+  // Συνάρτηση για χειρισμό σφαλμάτων πληρωμής
   function onError(error) {
     toast.error(error.message);
   }
 
+  // Δημιουργία παραγγελίας PayPal
   function createOrder(data, actions) {
     return actions.order
       .create({
@@ -101,30 +107,33 @@ const OrderScreen = () => {
       });
   }
 
+  // Χειρισμός σήμανσης παραγγελίας ως παραδοθείσας από τον admin
   const deliverOrderHandler = async () => {
     try {
       await deliverOrder(orderId);
       refetch();
-      toast.success("Order delivered");
+      toast.success("Η παραγγελία παραδόθηκε");
     } catch (error) {
       toast.error(error?.data?.message || error.message);
     }
   };
 
+  // Render component ανάλογα με κατάσταση φόρτωσης ή σφάλματος
   return isLoading ? (
     <Loader />
   ) : error ? (
     <Message variant="danger">{error.data.message}</Message>
   ) : (
     <>
-      <h1>Order {order._id}</h1>
+      <h1>Παραγγελία {order._id}</h1>
       <Row>
         <Col md={8}>
           <ListGroup variant="flush">
+            {/* Πληροφορίες αποστολής */}
             <ListGroup.Item>
-              <h2>Shipping</h2>
+              <h2>Αποστολή</h2>
               <p>
-                <strong>Name: </strong>
+                <strong>Όνομα: </strong>
                 {order.user.name}
               </p>
               <p>
@@ -132,33 +141,38 @@ const OrderScreen = () => {
                 {order.user.email}
               </p>
               <p>
-                <strong>Address: </strong>
+                <strong>Διεύθυνση: </strong>
                 {order.shippingAddress.address}, {order.shippingAddress.city}{" "}
                 {order.shippingAddress.postalCode},{" "}
                 {order.shippingAddress.country}
               </p>
               {order.isDelivered ? (
                 <Message variant="success">
-                  Delivered on {order.deliveredAt}
+                  Παραδόθηκε στις {order.deliveredAt}
                 </Message>
               ) : (
-                <Message variant="danger">Not delivered</Message>
+                <Message variant="danger">Δεν έχει παραδοθεί</Message>
               )}
             </ListGroup.Item>
+
+            {/* Πληροφορίες πληρωμής */}
             <ListGroup.Item>
-              <h2>Payment Method</h2>
+              <h2>Τρόπος Πληρωμής</h2>
               <p>
-                <strong>Method:</strong>
-                {order.paymentMethod}
+                <strong>Μέθοδος:</strong> {order.paymentMethod}
               </p>
               {order.isPaid ? (
-                <Message variant="success">Paid on {order.paidAt}</Message>
+                <Message variant="success">
+                  Πληρώθηκε στις {order.paidAt}
+                </Message>
               ) : (
-                <Message variant="danger">Not Paid</Message>
+                <Message variant="danger">Δεν έχει πληρωθεί</Message>
               )}
             </ListGroup.Item>
+
+            {/* Προϊόντα παραγγελίας */}
             <ListGroup.Item>
-              <h2>Order Items</h2>
+              <h2>Προϊόντα Παραγγελίας</h2>
               {order.orderItems.map((item, index) => (
                 <ListGroup.Item key={index}>
                   <Row>
@@ -177,31 +191,34 @@ const OrderScreen = () => {
             </ListGroup.Item>
           </ListGroup>
         </Col>
+
+        {/* Περίληψη Παραγγελίας και Ενέργειες */}
         <Col md={4}>
           <Card>
             <ListGroup variant="flush">
               <ListGroup.Item>
-                <h2>Order Summary</h2>
+                <h2>Περίληψη Παραγγελίας</h2>
               </ListGroup.Item>
               <ListGroup.Item>
                 <Row>
-                  <Col>Items</Col>
+                  <Col>Προϊόντα</Col>
                   <Col>${order.itemsPrice}</Col>
                 </Row>
                 <Row>
-                  <Col>Shipping</Col>
+                  <Col>Αποστολή</Col>
                   <Col>${order.shippingPrice}</Col>
                 </Row>
                 <Row>
-                  <Col>Tax</Col>
+                  <Col>Φόρος</Col>
                   <Col>${order.taxPrice}</Col>
                 </Row>
                 <Row>
-                  <Col>Total</Col>
+                  <Col>Σύνολο</Col>
                   <Col>${order.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
-              {/* START PAY ORDER */}
+
+              {/* --- ΠΛΗΡΩΜΗ --- */}
               {!order.isPaid && (
                 <ListGroup.Item>
                   {loadingPay && <Loader />}
@@ -213,22 +230,21 @@ const OrderScreen = () => {
                         onClick={onApproveTest}
                         style={{ marginBottom: "10px" }}
                       >
-                        Test Pay Order
+                        Δοκιμαστική Πληρωμή
                       </Button>
                       <div>
                         <PayPalButtons
                           createOrder={createOrder}
                           onApprove={onApprove}
                           onError={onError}
-                        ></PayPalButtons>
+                        />
                       </div>
                     </div>
                   )}
                 </ListGroup.Item>
               )}
-              {/* END PAY ORDER */}
 
-              {/* START MARK AS DELIVER */}
+              {/* --- ΣΗΜΑΝΣΗ ΩΣ ΠΑΡΑΔΟΘΕΝ --- */}
               {loadingDeliver && <Loader />}
               {userInfo &&
                 userInfo.isAdmin &&
@@ -240,11 +256,10 @@ const OrderScreen = () => {
                       className="btn btn-block"
                       onClick={deliverOrderHandler}
                     >
-                      Mark As Delivered
+                      Σήμανση ως Παραδοθέν
                     </Button>
                   </ListGroup.Item>
                 )}
-              {/* END MARK AS DELIVER */}
             </ListGroup>
           </Card>
         </Col>

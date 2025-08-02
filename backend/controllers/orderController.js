@@ -1,8 +1,8 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Order from "../models/orderModel.js";
 
-// create new order
-// post /api/routes
+// Δημιουργία νέας παραγγελίας
+// POST /api/routes
 const addOrderItems = asyncHandler(async (req, res) => {
   const {
     orderItems,
@@ -13,40 +13,46 @@ const addOrderItems = asyncHandler(async (req, res) => {
     shippingPrice,
     totalPrice,
   } = req.body;
+
+  // Ελέγχουμε αν υπάρχουν παραγγελίες προς αποστολή
   if (orderItems && orderItems.length === 0) {
     res.status(400);
-    throw new Error("No order items");
+    throw new Error("Δεν υπάρχουν αντικείμενα παραγγελίας");
   } else {
+    // Δημιουργούμε ένα νέο αντικείμενο παραγγελίας
     const order = new Order({
       orderItems: orderItems.map((x) => ({
         ...x,
-        product: x._id,
-        _id: undefined,
+        product: x._id, // Αντιστοιχούμε το _id του προϊόντος
+        _id: undefined, // Αφαιρούμε το _id από το αντικείμενο ώστε να δημιουργηθεί νέο
       })),
-      user: req.user._id,
-      shippingAddress,
-      paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice,
+      user: req.user._id, // Ο χρήστης που έκανε την παραγγελία
+      shippingAddress, // Διεύθυνση αποστολής
+      paymentMethod, // Μέθοδος πληρωμής
+      itemsPrice, // Τιμή αντικειμένων
+      taxPrice, // Φόρος
+      shippingPrice, // Κόστος αποστολής
+      totalPrice, // Συνολικό κόστος
     });
 
+    // Αποθηκεύουμε την παραγγελία στη βάση δεδομένων
     const createOrder = await order.save();
     res.status(201).json(createOrder);
   }
 });
 
-// get logged in user orders
-// post /api/orders/myorders
+// Λήψη παραγγελιών του τρέχοντος χρήστη
+// GET /api/orders/myorders
 const getMyOrders = asyncHandler(async (req, res) => {
+  // Αναζητούμε τις παραγγελίες με βάση το user id
   const orders = await Order.find({ user: req.user._id });
   res.status(200).json(orders);
 });
 
-// get order by id
-// post /api/orders/:id
+// Λήψη παραγγελίας με βάση το id της
+// GET /api/orders/:id
 const getOrderById = asyncHandler(async (req, res) => {
+  // Βρίσκουμε την παραγγελία και γεμίζουμε τα στοιχεία του χρήστη (name, email)
   const order = await Order.findById(req.params.id).populate(
     "user",
     "name email"
@@ -56,54 +62,56 @@ const getOrderById = asyncHandler(async (req, res) => {
     res.status(200).json(order);
   } else {
     res.status(404);
-    throw new Error("Order not found");
+    throw new Error("Η παραγγελία δεν βρέθηκε");
   }
 });
 
-// update order to paid
-// put /api/orders/:id/pay
+// Ενημέρωση παραγγελίας ως πληρωμένη
+// PUT /api/orders/:id/pay
 const updateOrderToPaid = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
   if (order) {
-    order.isPaid = true;
-    order.paidAt = Date.now();
+    order.isPaid = true; // Ορίζουμε την παραγγελία ως πληρωμένη
+    order.paidAt = Date.now(); // Καταγράφουμε την ημερομηνία πληρωμής
     order.paymentResult = {
+      // Αποθηκεύουμε τα στοιχεία πληρωμής
       id: req.body.id,
       status: req.body.status,
       update_time: req.body.update_time,
       email_address: req.body.payer.email_address,
     };
 
-    const updateOrder = await order.save();
+    const updatedOrder = await order.save();
 
     res.status(200).json(updatedOrder);
   } else {
     res.status(400);
-    throw new Error("Order not found");
+    throw new Error("Η παραγγελία δεν βρέθηκε");
   }
 });
 
-// update order to delivered
-// put /api/orders/:id/deliver
+// Ενημέρωση παραγγελίας ως παραδομένη
+// PUT /api/orders/:id/deliver
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
   if (order) {
-    order.isDelivered = true;
-    order.deliveredAt = Date.now();
+    order.isDelivered = true; // Ορίζουμε την παραγγελία ως παραδομένη
+    order.deliveredAt = Date.now(); // Καταγράφουμε την ημερομηνία παράδοσης
 
-    const updateOrder = await order.save();
-    res.status(200).json(updateOrder);
+    const updatedOrder = await order.save();
+    res.status(200).json(updatedOrder);
   } else {
     res.status(404);
-    throw new Error("Order not found");
+    throw new Error("Η παραγγελία δεν βρέθηκε");
   }
 });
 
-// get all orders
-// get /api/orders
+// Λήψη όλων των παραγγελιών (για admin)
+// GET /api/orders
 const getOrders = asyncHandler(async (req, res) => {
+  // Αναζητούμε όλες τις παραγγελίες και γεμίζουμε τα στοιχεία του χρήστη (id, name)
   const orders = await Order.find({}).populate("user", "id name");
   res.status(200).json(orders);
 });

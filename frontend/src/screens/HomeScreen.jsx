@@ -6,6 +6,9 @@ import Product from "../components/Product";
 import { useGetProductsQuery } from "../slices/productsApiSlice";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
+import { useParams, Link } from "react-router-dom";
+import Paginate from "../components/Paginate";
+import ProductCarousel from "../components/ProductCarousel";
 
 const HomeScreen = () => {
   // Declare state variable to hold the list of products
@@ -27,24 +30,52 @@ const HomeScreen = () => {
   }, []);
   */
 
-  const { data: products, isLoading, error } = useGetProductsQuery();
+  // Παίρνουμε τις παραμέτρους από το url (λέξη κλειδί αναζήτησης και αριθμός σελίδας)
+  const { keyword, pageNumber } = useParams();
+
+  // Κάνουμε αίτημα για τα προϊόντα, με τα φίλτρα keyword και pageNumber
+  const { data, isLoading, error } = useGetProductsQuery({
+    keyword,
+    pageNumber,
+  });
 
   return (
     <>
+      {/* Αν δεν υπάρχει λέξη αναζήτησης, δείχνουμε το καρουζέ προϊόντων */}
+      {!keyword ? (
+        <ProductCarousel />
+      ) : (
+        // Αν υπάρχει λέξη αναζήτησης, δείχνουμε κουμπί επιστροφής στην αρχική
+        <Link to="/" className="btn btn-light mb-4">
+          Επιστροφή
+        </Link>
+      )}
+
+      {/* Αν φορτώνει, δείχνουμε το Loader */}
       {isLoading ? (
         <Loader />
       ) : error ? (
-        <Message variant="danger">{error?.data?.message || error.error}</Message>
+        // Αν υπάρχει σφάλμα, εμφανίζουμε μήνυμα λάθους
+        <Message variant="danger">
+          {error?.data?.message || error.error}
+        </Message>
       ) : (
         <>
-          <h1>Latest Products</h1>
+          <h1>Τελευταία Προϊόντα</h1>
           <Row>
-            {products.map((product) => (
+            {/* Χαρτογραφούμε τα προϊόντα και τα εμφανίζουμε */}
+            {data.products.map((product) => (
               <Col key={product._id} sm={12} md={6} lg={4} xl={3}>
                 <Product product={product} />
               </Col>
             ))}
           </Row>
+          {/* Στοιχειοθέτηση σελίδων */}
+          <Paginate
+            pages={data.pages}
+            page={data.page}
+            keyword={keyword ? keyword : ""}
+          />
         </>
       )}
     </>

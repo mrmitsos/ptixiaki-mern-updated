@@ -1,7 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
-// Load environment variables into process.env
+
+// Φορτώνει τις μεταβλητές περιβάλλοντος στο process.env
 dotenv.config();
+
 import connectDB from "./config/db.js";
 import productRoutes from "./routes/productRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
@@ -11,51 +13,47 @@ import orderRoutes from "./routes/orderRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import path from "path";
 
+// Λήψη της πόρτας από το αρχείο περιβάλλοντος (.env)
 const port = process.env.PORT;
 
-connectDB(); //Connect to Mongodb
+// Σύνδεση στη MongoDB
+connectDB();
 
-// Create an instance of an Express application
+// Δημιουργία instance της εφαρμογής Express
 const app = express();
 
-// body parser middleware
+// Middleware για ανάλυση JSON σωμάτων αιτημάτων
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// cookie parser middleware
+// Middleware για ανάγνωση των cookies
 app.use(cookieParser());
 
-// Define a simple route for the root URL
+// Απλή βασική διαδρομή για έλεγχο λειτουργίας του API
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
+// Ρυθμίσεις routes για προϊόντα, χρήστες, παραγγελίες και αποστολές αρχείων
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/upload", uploadRoutes);
 
-// Define a route to get all products
-app.get("/api/products", (req, res) => {
-  res.json(products); // Respond with the full list of products in JSON format
-});
-
-// Define a route to get a single product by ID
-app.get("/api/products/:id", (req, res) => {
-  // Find the product that matches the provided ID
-  const product = products.find((p) => p._id === req.params.id);
-  res.json(product); // Respond with the matching product, or undefined if not found
-});
-
+// Διαδρομή για λήψη των ρυθμίσεων του PayPal Client ID
 app.get("/api/config/paypal", (req, res) =>
   res.send({ clientId: process.env.PAYPAL_CLIENT_ID })
 );
 
-const __dirname = path.resolve(); // set dirname to current folder
+// Ορισμός του __dirname (τρέχων φάκελος) για χρήση με static αρχεία
+const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
+// Middleware για περιπτώσεις που δεν βρέθηκε η διαδρομή
 app.use(notFound);
+
+// Middleware για κεντρικό χειρισμό σφαλμάτων
 app.use(errorHandler);
 
-// Start the server and listen on the specified port
+// Εκκίνηση του διακομιστή και ακρόαση στην ορισμένη πόρτα
 app.listen(port, () => console.log(`Server running on port ${port}`));

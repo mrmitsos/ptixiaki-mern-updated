@@ -7,44 +7,45 @@ import Product from "./models/productModel.js";
 import Order from "./models/orderModel.js";
 import connectDB from "./config/db.js";
 
+// Φορτώνει τις μεταβλητές περιβάλλοντος από το .env αρχείο
 dotenv.config();
 
+// Σύνδεση στη βάση δεδομένων
 connectDB();
 
-// Function to import sample data into the database
+// Συνάρτηση εισαγωγής δεδομένων στη βάση
 const importData = async () => {
   try {
-    // Clear existing data from collections
+    // Διαγραφή όλων των υπαρχόντων εγγραφών στις συλλογές
     await Order.deleteMany();
     await Product.deleteMany();
     await User.deleteMany();
 
-    // Insert sample users into the User collection
+    // Εισαγωγή χρηστών από το αρχείο data/users.js
     const createdUsers = await User.insertMany(users);
 
-    // Get the ID of the first user (assumed to be admin)
+    // Λήψη του ID του πρώτου χρήστη (υποτίθεται ότι είναι διαχειριστής)
     const adminUser = createdUsers[0]._id;
 
-    // Attach admin user ID to each product as the owner
+    // Συσχέτιση του admin χρήστη με κάθε προϊόν
     const sampleProducts = products.map((product) => {
       return { ...product, user: adminUser };
     });
 
-    // Insert the sample products into the Product collection
+    // Εισαγωγή προϊόντων στη βάση δεδομένων
     await Product.insertMany(sampleProducts);
 
     console.log("Data Imported!");
-    process.exit();
+    process.exit(); // Τερματισμός της διεργασίας με επιτυχία
   } catch (error) {
     console.error("You made a mistake");
-    process.exit(1);
+    process.exit(1); // Τερματισμός με αποτυχία
   }
 };
 
-// Function to destroy all data in the database
+// Συνάρτηση διαγραφής όλων των δεδομένων από τη βάση
 const destroyData = async () => {
   try {
-    // Delete all documents from the collections
     await Order.deleteMany();
     await Product.deleteMany();
     await User.deleteMany();
@@ -57,9 +58,9 @@ const destroyData = async () => {
   }
 };
 
-// Check command line argument to determine whether to import or destroy data
+// Εκτέλεση της κατάλληλης συνάρτησης ανάλογα με την εντολή (π.χ., node seeder -d)
 if (process.argv[2] === "-d") {
-  destroyData();
+  destroyData(); // Διαγραφή
 } else {
-  importData();
+  importData(); // Εισαγωγή
 }

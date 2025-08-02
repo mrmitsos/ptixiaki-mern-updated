@@ -3,19 +3,25 @@ import { apiSlice } from "./slices/apiSlice";
 import cartSliceReducer from "./slices/cartSlice";
 import authSliceReducer from "./slices/authSlice";
 
-// creating and configuring the Redux store
+// Δημιουργία και ρύθμιση του Redux store
 const store = configureStore({
-  // registering reducers for the store
+  // Δήλωση των reducers που θα χρησιμοποιεί το store
   reducer: {
-    // dynamically assigning the reducer using the slice's reducerPath as the key
+    // Καταχώρηση του API reducer με το όνομα του reducerPath από το apiSlice
     [apiSlice.reducerPath]: apiSlice.reducer,
+
+    // Reducer για το καλάθι αγορών
     cart: cartSliceReducer,
+
+    // Reducer για την αυθεντικοποίηση χρήστη
     auth: authSliceReducer,
   },
-  // adding the API middleware to the default middleware stack
+
+  // Προσθήκη του middleware του RTK Query στην προεπιλεγμένη λίστα middleware
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),
-  // enabling Redux DevTools for debugging
+
+  // Ενεργοποίηση των εργαλείων ανάπτυξης Redux (Redux DevTools)
   devTools: true,
 });
 

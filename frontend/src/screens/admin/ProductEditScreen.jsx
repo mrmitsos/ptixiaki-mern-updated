@@ -13,8 +13,9 @@ import {
 } from "../../slices/productsApiSlice";
 
 const ProductEditScreen = () => {
-  const { id: productId } = useParams();
+  const { id: productId } = useParams(); // Παίρνουμε το productId από το URL
 
+  // Καταστάσεις για αποθήκευση των πεδίων της φόρμας
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
   const [price, setPrice] = useState(0);
@@ -23,22 +24,24 @@ const ProductEditScreen = () => {
   const [countInStock, setCountInStock] = useState(0);
   const [description, setDescription] = useState("");
 
+  // Κλήση στο API για λήψη λεπτομερειών προϊόντος
   const {
     data: product,
     isLoading,
     error,
   } = useGetProductDetailsQuery(productId);
 
-  //console.log(product);
-
+  // Mutation για ενημέρωση προϊόντος
   const [updateProduct, { isLoading: loadingUpdate }] =
     useUpdateProductMutation();
 
+  // Mutation για ανέβασμα εικόνας προϊόντος
   const [uploadProductImage, { isLoading: loadingUpload }] =
     useUploadProductImageMutation();
 
   const navigate = useNavigate();
 
+  // Όταν φορτώνει το προϊόν, ενημερώνουμε τα πεδία της φόρμας με τα δεδομένα
   useEffect(() => {
     if (product) {
       setName(product.name);
@@ -51,8 +54,11 @@ const ProductEditScreen = () => {
     }
   }, [product]);
 
+  // Συνάρτηση υποβολής φόρμας για ενημέρωση προϊόντος
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    // Δημιουργία αντικειμένου με ενημερωμένα δεδομένα προϊόντος
     const updatedProduct = {
       productId,
       name,
@@ -64,44 +70,51 @@ const ProductEditScreen = () => {
       description,
     };
 
+    // Κλήση του mutation για ενημέρωση και διαχείριση αποτελέσματος
     const result = await updateProduct(updatedProduct);
     if (result.error) {
-      toast.error(result.error);
+      toast.error(result.error); // Εμφάνιση λάθους αν υπάρχει
     } else {
-      toast.success("Product updated");
-      navigate("/admin/productlist");
+      toast.success("Product updated"); // Επιτυχής ενημέρωση
+      navigate("/admin/productlist"); // Πλοήγηση στη λίστα προϊόντων διαχειριστή
     }
   };
 
+  // Συνάρτηση για ανέβασμα αρχείου εικόνας
   const uploadFileHandler = async (e) => {
-    // console.log(e.target.files[0]);
-
     const formData = new FormData();
-    formData.append("image", e.target.files[0]);
+    formData.append("image", e.target.files[0]); // Προσθήκη αρχείου στο FormData
 
     try {
       const res = await uploadProductImage(formData).unwrap();
-      toast.success(res.message);
-      setImage(res.image);
+      toast.success(res.message); // Εμφάνιση επιτυχίας
+      setImage(res.image); // Ενημέρωση πεδίου εικόνας με το νέο URL/μονοπάτι
     } catch (error) {
-      toast.error(error?.data?.message || error.error);
+      toast.error(error?.data?.message || error.error); // Εμφάνιση λάθους
     }
   };
 
   return (
     <>
+      {/* Κουμπί επιστροφής στη λίστα προϊόντων */}
       <Link to="/admin/productlist" className="btn btn-light my3">
         Go Back
       </Link>
+
       <FormContainer>
         <h1>Edit Product</h1>
+
+        {/* Loader κατά την ενημέρωση */}
         {loadingUpdate && <Loader />}
+
+        {/* Εμφάνιση loader ή λάθους ή φόρμας ανάλογα με την κατάσταση φόρτωσης */}
         {isLoading ? (
           <Loader />
         ) : error ? (
           <Message variant="danger">{error}</Message>
         ) : (
           <Form onSubmit={submitHandler}>
+            {/* Πεδίο ονόματος */}
             <Form.Group controlId="name">
               <Form.Label>Name</Form.Label>
               <Form.Control
@@ -111,6 +124,8 @@ const ProductEditScreen = () => {
                 onChange={(e) => setName(e.target.value)}
               ></Form.Control>
             </Form.Group>
+
+            {/* Πεδίο τιμής */}
             <Form.Group controlId="price" className="my-2">
               <Form.Label>Price</Form.Label>
               <Form.Control
@@ -121,16 +136,18 @@ const ProductEditScreen = () => {
               ></Form.Control>
             </Form.Group>
 
-            {/* START IMAGE INPUT HERE */}
+            {/* Εικόνα προϊόντος */}
             {loadingUpload && <Loader />}
             <Form.Group controlId="image" className="my-2">
               <Form.Label>Image</Form.Label>
+              {/* Εισαγωγή URL εικόνας */}
               <Form.Control
                 type="text"
                 placeholder="Enter Image Url"
                 value={image}
-                onChange={(e) => setImage}
+                onChange={(e) => setImage(e.target.value)} // Διόρθωση: έλειπε το (e) => setImage(e.target.value)
               ></Form.Control>
+              {/* Ανεβάζουμε αρχείο εικόνας */}
               <Form.Control
                 type="file"
                 label="Choose file"
@@ -138,8 +155,7 @@ const ProductEditScreen = () => {
               ></Form.Control>
             </Form.Group>
 
-            {/* END IMAGE INPUT HERE */}
-
+            {/* Πεδίο μάρκας */}
             <Form.Group controlId="brand" className="my-2">
               <Form.Label>Brand</Form.Label>
               <Form.Control
@@ -149,6 +165,8 @@ const ProductEditScreen = () => {
                 onChange={(e) => setBrand(e.target.value)}
               ></Form.Control>
             </Form.Group>
+
+            {/* Πεδίο απόθεματος */}
             <Form.Group controlId="countInStock" className="my-2">
               <Form.Label>Count In Stock</Form.Label>
               <Form.Control
@@ -158,6 +176,8 @@ const ProductEditScreen = () => {
                 onChange={(e) => setCountInStock(e.target.value)}
               ></Form.Control>
             </Form.Group>
+
+            {/* Πεδίο κατηγορίας */}
             <Form.Group controlId="category" className="my-2">
               <Form.Label>Category</Form.Label>
               <Form.Control
@@ -167,6 +187,8 @@ const ProductEditScreen = () => {
                 onChange={(e) => setCategory(e.target.value)}
               ></Form.Control>
             </Form.Group>
+
+            {/* Πεδίο περιγραφής */}
             <Form.Group controlId="description" className="my-2">
               <Form.Label>Description</Form.Label>
               <Form.Control
@@ -176,6 +198,8 @@ const ProductEditScreen = () => {
                 onChange={(e) => setDescription(e.target.value)}
               ></Form.Control>
             </Form.Group>
+
+            {/* Κουμπί υποβολής */}
             <Button type="submit" variant="primary" className="my-2">
               Update
             </Button>

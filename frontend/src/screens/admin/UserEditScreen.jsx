@@ -12,12 +12,14 @@ import {
 } from "../../slices/usersApiSlice";
 
 const UserEditScreen = () => {
-  const { id: userId } = useParams();
+  const { id: userId } = useParams(); // Παίρνουμε το userId από το URL
 
+  // Τοπικό state για τα πεδία της φόρμας
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Κάνουμε fetch τα στοιχεία του χρήστη μέσω RTK Query
   const {
     data: user,
     isLoading,
@@ -25,12 +27,12 @@ const UserEditScreen = () => {
     error,
   } = useGetUserDetailsQuery(userId);
 
-  //console.log(product);
-
+  // Mutation για ενημέρωση χρήστη
   const [updateUser, { isLoading: loadingUpdate }] = useUpdateUserMutation();
 
   const navigate = useNavigate();
 
+  // Όταν φορτωθούν τα δεδομένα του χρήστη, ενημερώνουμε τοπικό state
   useEffect(() => {
     if (user) {
       setName(user.name);
@@ -39,33 +41,41 @@ const UserEditScreen = () => {
     }
   }, [user]);
 
+  // Όταν ο χρήστης πατήσει submit στη φόρμα
   const submitHandler = async (e) => {
     e.preventDefault();
-    //console.log("submit");
-
     try {
+      // Καλούμε το mutation για ενημέρωση με τα δεδομένα της φόρμας
       await updateUser({ userId, name, email, isAdmin });
-      toast.success("User updated successfully");
-      refetch();
-      navigate("/admin/userlist");
+      toast.success("User updated successfully"); // Μήνυμα επιτυχίας
+      refetch(); // Φρεσκάρισμα στοιχείων χρήστη
+      navigate("/admin/userlist"); // Μεταφορά στη λίστα χρηστών
     } catch (error) {
-      toast.error(error?.data?.message || error.error);
+      toast.error(error?.data?.message || error.error); // Εμφάνιση λάθους
     }
   };
 
   return (
     <>
+      {/* Κουμπί για επιστροφή στη λίστα χρηστών */}
       <Link to="/admin/userlist" className="btn btn-light my3">
         Go Back
       </Link>
+
+      {/* Κοντέινερ για το φόρμα */}
       <FormContainer>
         <h1>Edit User</h1>
+
+        {/* Εμφάνιση loader όταν ενημερώνεται */}
         {loadingUpdate && <Loader />}
+
+        {/* Εμφάνιση loader ή λάθους κατά το φόρτωμα */}
         {isLoading ? (
           <Loader />
         ) : error ? (
           <Message variant="danger">{error}</Message>
         ) : (
+          // Φόρμα επεξεργασίας χρήστη
           <Form onSubmit={submitHandler}>
             <Form.Group controlId="name">
               <Form.Label>Name</Form.Label>
@@ -74,7 +84,7 @@ const UserEditScreen = () => {
                 placeholder="Enter name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-              ></Form.Control>
+              />
             </Form.Group>
 
             <Form.Group controlId="email" className="my-2">
@@ -84,16 +94,16 @@ const UserEditScreen = () => {
                 placeholder="Enter email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-              ></Form.Control>
+              />
             </Form.Group>
 
-            <Form.Group controlId="email" className="my-2">
+            <Form.Group controlId="isAdmin" className="my-2">
               <Form.Check
                 type="checkbox"
                 label="Is Admin"
                 checked={isAdmin}
                 onChange={(e) => setIsAdmin(e.target.checked)}
-              ></Form.Check>
+              />
             </Form.Group>
 
             <Button type="submit" variant="primary" className="my-2">

@@ -1,15 +1,15 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { BASE_URL } from "../constants";
 
-// creating a base query function that sets the base URL for all API requests
+// Δημιουργία βασικής query function που ορίζει τη βασική διεύθυνση URL για όλα τα API αιτήματα
 const baseQuery = fetchBaseQuery({ baseUrl: BASE_URL });
 
-// creating an API slice using Redux Toolkit Query
+// Δημιουργία ενός API slice χρησιμοποιώντας το Redux Toolkit Query
 export const apiSlice = createApi({
-  // base query function used for all endpoints
+  // Χρήση της baseQuery για όλα τα endpoints (αιτήματα)
   baseQuery,
-  // defining tag types for cache invalidation and automatic refetching
+  // Ορισμός τύπων tags για τη διαχείριση cache (ανανέωση δεδομένων όταν αλλάζουν)
   tagTypes: ["Product", "Order", "User"],
-  // placeholder for defining endpoints (queries and mutations)
+  // Εδώ θα δηλωθούν όλα τα endpoints (queries και mutations)
   endpoints: (builder) => ({}),
 });
