@@ -19,7 +19,8 @@ const authSlice = createSlice({
     // Μέθοδος για αποσύνδεση χρήστη (logout)
     logout: (state, action) => {
       state.userInfo = null; // Καθαρίζουμε το userInfo στο state
-      localStorage.removeItem("userInfo"); // Καθαρίζουμε το localStorage
+      //localStorage.removeItem("userInfo"); // Καθαρίζουμε το localStorage
+      localStorage.clear();
     },
   },
 });

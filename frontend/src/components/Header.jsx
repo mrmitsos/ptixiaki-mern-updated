@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useLogoutMutation } from "../slices/usersApiSlice";
 import { logout } from "../slices/authSlice";
 import SearchBox from "./SearchBox";
+import { resetCart } from "../slices/cartSlice";
 
 const Header = () => {
   // Παίρνουμε τα προϊόντα στο καλάθι από το redux store
@@ -26,8 +27,13 @@ const Header = () => {
     try {
       // Κάνουμε το API call για logout
       await logoutApiCall().unwrap();
+
       // Κάνουμε dispatch το logout action για να καθαρίσουμε το auth state
       dispatch(logout());
+
+      // Κάνουμε dispatch το resetCart για να καθαρίσουμε το καλάθι αγορών
+      dispatch(resetCart());
+
       // Μετάβαση στη σελίδα login
       navigate("/login");
     } catch (error) {

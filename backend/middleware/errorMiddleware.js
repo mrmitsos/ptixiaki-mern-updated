@@ -12,12 +12,6 @@ const errorHandler = (err, req, res, next) => {
   let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   let message = err.message;
 
-  // Ειδικός έλεγχος για λάθος ObjectId του Mongoose (όταν δεν υπάρχει το resource)
-  if (err.name === "CastError" && err.kind === "ObjectId") {
-    message = `Πόρος δεν βρέθηκε`;
-    statusCode = 404;
-  }
-
   // Επιστρέφει το μήνυμα σφάλματος και, αν δεν είναι σε παραγωγή, και το stack trace
   res.status(statusCode).json({
     message,

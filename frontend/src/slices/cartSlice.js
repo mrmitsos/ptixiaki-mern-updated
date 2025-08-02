@@ -56,8 +56,9 @@ const cartSlice = createSlice({
     // Καθαρισμός του καλάθιου (π.χ. μετά από ολοκλήρωση παραγγελίας)
     clearCartItems: (state, action) => {
       state.cartItems = [];
-      return updateCart(state);
+      localStorage.setItem("cart", JSON.stringify(state));
     },
+    resetCart: (state) => (state = initialState),
   },
 });
 
@@ -68,6 +69,7 @@ export const {
   saveShippingAddress,
   savePaymentMethod,
   clearCartItems,
+  resetCart,
 } = cartSlice.actions;
 
 // Εξαγωγή του reducer για το store

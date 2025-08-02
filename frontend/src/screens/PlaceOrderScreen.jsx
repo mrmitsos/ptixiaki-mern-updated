@@ -143,7 +143,9 @@ const PlaceOrderScreen = () => {
               </ListGroup.Item>
               {/* Εμφάνιση μηνύματος λάθους αν υπάρχει */}
               <ListGroup.Item>
-                {error && <Message variant="danger">{error}</Message>}
+                {error && (
+                  <Message variant="danger">{error.data.message}</Message>
+                )}
               </ListGroup.Item>
               <ListGroup.Item>
                 {/* Κουμπί τοποθέτησης παραγγελίας, απενεργοποιείται αν το καλάθι είναι άδειο */}

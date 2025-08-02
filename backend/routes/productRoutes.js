@@ -10,6 +10,7 @@ import {
   getTopProducts,
 } from "../controllers/productController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
+import checkObjectId from "../middleware/checkObjectId.js";
 
 // Λήψη όλων των προϊόντων (δημόσια διαδρομή)
 router
@@ -24,12 +25,12 @@ router.get("/top", getTopProducts);
 // Λήψη, ενημέρωση ή διαγραφή προϊόντος με βάση το id
 router
   .route("/:id")
-  .get(getProductById) // Λήψη προϊόντος με βάση το ID
-  .put(protect, admin, updateProduct) // Ενημέρωση προϊόντος (μόνο admin)
-  .delete(protect, admin, deleteProduct); // Διαγραφή προϊόντος (μόνο admin)
+  .get(checkObjectId, getProductById) // Λήψη προϊόντος με βάση το ID
+  .put(protect, admin, checkObjectId, updateProduct) // Ενημέρωση προϊόντος (μόνο admin)
+  .delete(protect, admin, checkObjectId, deleteProduct); // Διαγραφή προϊόντος (μόνο admin)
 
 // Δημιουργία κριτικής για προϊόν (προστατευμένη διαδρομή)
-router.route("/:id/reviews").post(protect, createProductReview);
+router.route("/:id/reviews").post(protect, checkObjectId, createProductReview);
 
 /* 
 // Παρατηρημένα παλιά routes που έχουν αντικατασταθεί από τους controllers

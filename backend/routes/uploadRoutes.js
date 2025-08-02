@@ -20,29 +20,44 @@ const storage = multer.diskStorage({
 });
 
 // Συνάρτηση για έλεγχο τύπου αρχείου (μόνο εικόνες jpg, jpeg, png)
-function checkFileType(file, cb) {
-  const filetypes = /jpg|jpeg|png/; // Τύποι εικόνων που επιτρέπονται
+function fileFilter(req, file, cb) {
+  const filetypes = /jpe?g|png|webp/; // Τύποι εικόνων που επιτρέπονται
+  const mimetypes = /image\/jpe?g|image\/png|image\/webp/; // Έλεγχος τύπου MIME
+
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase()); // Έλεγχος επέκτασης
-  const mimetype = filetypes.test(file.mimetype); // Έλεγχος τύπου MIME
+  const mimetype = mimetypes.test(file.mimetype);
 
   if (extname && mimetype) {
     return cb(null, true); // Επιτρέπεται το αρχείο
   } else {
-    cb("Images only!"); // Απορρίπτεται αν δεν είναι εικόνα
+    cb(new Error("Images only!"), false); // Απορρίπτεται αν δεν είναι εικόνα
   }
 }
 
-const upload = multer({
-  storage,
-  // Μπορείς να προσθέσεις εδώ τον έλεγχο τύπου με fileFilter: checkFileType
-});
+const upload = multer({ storage, fileFilter });
+const uploadSingleImage = upload.single("image");
 
 // Route για ανέβασμα μιας εικόνας
+router.post("/", (req, res) => {
+  uploadSingleImage(req, res, function (error) {
+    if (error) {
+      res.status(400).send({ message: error.message });
+    }
+
+    res.status(200).send({
+      message: "Image uploaded successfully",
+      image: `/${req.file.path}`,
+    });
+  });
+});
+
+/* OLD ONE
 router.post("/", upload.single("image"), (req, res) => {
   res.send({
     message: "Image uploaded",
     image: `/${req.file.path}`, // Επιστρέφει το μονοπάτι της αποθηκευμένης εικόνας
   });
 });
+*/
 
 export default router;
