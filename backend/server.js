@@ -29,11 +29,6 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware για ανάγνωση των cookies
 app.use(cookieParser());
 
-// Απλή βασική διαδρομή για έλεγχο λειτουργίας του API
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
-
 // Ρυθμίσεις routes για προϊόντα, χρήστες, παραγγελίες και αποστολές αρχείων
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
@@ -48,6 +43,21 @@ app.get("/api/config/paypal", (req, res) =>
 // Ορισμός του __dirname (τρέχων φάκελος) για χρήση με static αρχεία
 const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+
+if (process.env.NODE_ENV == "production") {
+  // set static folder
+  app.use(express.static(path.join(__dirname, "/frontend/build")));
+
+  // any route that is not api will go to index.html
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"))
+  );
+} else {
+  // Απλή βασική διαδρομή για έλεγχο λειτουργίας του API
+  app.get("/", (req, res) => {
+    res.send("API is running...");
+  });
+}
 
 // Middleware για περιπτώσεις που δεν βρέθηκε η διαδρομή
 app.use(notFound);

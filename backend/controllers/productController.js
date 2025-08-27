@@ -4,7 +4,7 @@ import Product from "../models/productModel.js";
 // Λήψη όλων των προϊόντων με σελιδοποίηση και αναζήτηση
 // GET /api/products
 const getProducts = asyncHandler(async (req, res) => {
-  const pageSize = 8; // αριθμός προϊόντων ανά σελίδα
+  const pageSize = process.env.PAGINATION_LIMIT; // αριθμός προϊόντων ανά σελίδα
   const page = Number(req.query.pageNumber) || 1; // τρέχουσα σελίδα
 
   // Αν υπάρχει λέξη κλειδί αναζήτησης, δημιουργούμε regex για εύρεση στο όνομα προϊόντος
